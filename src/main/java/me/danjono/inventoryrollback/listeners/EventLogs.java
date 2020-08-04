@@ -3,6 +3,7 @@ package me.danjono.inventoryrollback.listeners;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -36,14 +37,14 @@ public class EventLogs implements Listener {
 	}
 
 	@EventHandler
-	private void playerDeath(EntityDamageEvent e) {
+	private void playerDeath(PlayerDeathEvent e) {
 		if (!ConfigFile.enabled) return;
-		if (!(e.getEntity() instanceof Player)) return;
+		Player player = e.getEntity();
+		EntityDamageEvent ede = player.getLastDamageCause();
+		DamageCause cause = ede != null ? ede.getCause() : null;
 
-		Player player = (Player) e.getEntity();
-
-		if (player.getHealth() - e.getDamage() <= 0 && player.hasPermission("inventoryrollback.deathsave")) {											
-			new SaveInventory(player, LogType.DEATH, e.getCause(), player.getInventory(), player.getEnderChest()).createSave();
+		if (player.hasPermission("inventoryrollback.deathsave")) {
+			new SaveInventory(player, LogType.DEATH, cause, player.getInventory(), player.getEnderChest()).createSave();
 		}
 	}
 
